@@ -22,7 +22,7 @@ jobs:
         CODE_CONTENT=$(cat src/index.js | jq -Rs .)
         
         # Use Fine-grained API token with Read-only access
-        curl -X POST https://api-inference.huggingface.co/models/<YOUR_MODEL_NAME> \
+        curl -X POST https://api-inference.huggingface.co/models/bigcode/starcoder \
         -H "Authorization: Bearer ${{ secrets.HF_API_KEY }}" \
         -H "Content-Type: application/json" \
         -d "{\"inputs\": $CODE_CONTENT}" \
