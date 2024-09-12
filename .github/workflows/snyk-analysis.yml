@@ -20,7 +20,7 @@ jobs:
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
         -d '{
-          "model": "gpt-4",
+          "model": "gpt-3.5-turbo",  # モデルを gpt-3.5-turbo に変更
           "prompt": "Please check the following code for idempotency issues: $(cat src/index.js)",
           "max_tokens": 1000
         }'
