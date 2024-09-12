@@ -1,4 +1,4 @@
-name: AI Code Review for Idempotency
+name: Hugging Face Code Review
 
 on:
   pull_request:
@@ -11,25 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Install jq
+    - uses: actions/checkout@v2
+    
+    - name: Install dependencies
       run: sudo apt-get install -y jq
 
-    - name: Read and send code file directly
+    - name: Send code to Hugging Face API for analysis
       run: |
-        CODE_CONTENT=$(jq -Rs . < src/index.js)
-        echo "Escaped code content: $CODE_CONTENT"
+        # Read the code content from the file
+        CODE_CONTENT=$(cat src/index.js | jq -Rs .)
         
-        JSON_PAYLOAD=$(jq -n --arg code "$CODE_CONTENT" '{
-          "model": "gpt-3.5-turbo",
-          "prompt": "Please check the following code for idempotency issues: \($code)",
-          "max_tokens": 1000
-        }')
-        
-        echo "Sending JSON Payload: $JSON_PAYLOAD"
-        curl -X POST https://api.openai.com/v1/completions \
+        # Use Fine-grained API token with Read-only access
+        curl -X POST https://api-inference.huggingface.co/models/<YOUR_MODEL_NAME> \
+        -H "Authorization: Bearer ${{ secrets.HF_API_KEY }}" \
         -H "Content-Type: application/json" \
-        -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-        -d "$JSON_PAYLOAD"
+        -d "{\"inputs\": $CODE_CONTENT}" \
+        -o result.json
+        
+    - name: Output the analysis results
+      run: cat result.json
