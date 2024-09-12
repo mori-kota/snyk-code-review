@@ -10,7 +10,7 @@ on:
 
 jobs:
   snyk:
-    runs-on: ubuntu-latest  # Snykによる解析をUbuntu環境で実行
+    runs-on: ubuntu-latest  # Snykの解析をUbuntu環境で実行
 
     steps:
     - uses: actions/checkout@v2  # リポジトリをチェックアウト
@@ -24,8 +24,8 @@ jobs:
       run: npm install  # プロジェクトの依存関係をインストール
 
     - name: Run Snyk Code Test
-      uses: snyk/actions/setup@v2  # Snykの公式アクションを利用
+      uses: snyk/actions/setup@v1  # 正しいバージョンは `v1`
       with:
         args: snyk code test  # Snykでコード解析を実行
       env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}  # GitHub SecretsにSnyk APIトークンを設定
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}  # GitHub Secretsに追加されたSnyk APIトークンを使用
