@@ -13,6 +13,13 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+      
+    - name: Install jq
+      run: sudo apt-get install jq
+
+    - name: Read code file
+      id: read_code
+      run: echo "::set-output name=code::$(cat src/index.js | jq -Rs .)"
 
     - name: AI-driven Idempotency Check
       run: |
@@ -20,7 +27,7 @@ jobs:
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
         -d '{
-          "model": "gpt-3.5-turbo",  # モデルを gpt-3.5-turbo に変更
-          "prompt": "Please check the following code for idempotency issues: $(cat src/index.js)",
+          "model": "gpt-3.5-turbo",
+          "prompt": "Please check the following code for idempotency issues: ${{ steps.read_code.outputs.code }}",
           "max_tokens": 1000
         }'
