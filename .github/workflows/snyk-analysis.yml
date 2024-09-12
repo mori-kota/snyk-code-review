@@ -1,31 +1,22 @@
-name: Snyk Code Analysis
+name: Snyk Code Monitoring
 
 on:
-  pull_request:
-    branches:
-      - main  # PRが作成されたときに実行
   push:
     branches:
-      - main  # mainブランチへのプッシュ時にも実行
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  snyk:
-    runs-on: ubuntu-latest  # Snykの解析をUbuntu環境で実行
+  security:
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2  # リポジトリをチェックアウト
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'  # Node.jsのバージョンを指定
-
-    - name: Install dependencies
-      run: npm install  # プロジェクトの依存関係をインストール
-
-    - name: Set up Snyk
-      uses: snyk/snyk@master  # 最新のSnyk GitHub Action
-      with:
-        args: monitor  # コード解析を行う（snyk monitorまたはsnyk test）
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}  # GitHub Secretsに追加されたSnyk APIトークンを使用
+      - uses: actions/checkout@master  # リポジトリのチェックアウト
+      - name: Run Snyk monitor
+        uses: snyk/actions/node@master  # SnykのNode.js用アクション
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor  # Snykのモニタリングを実行
