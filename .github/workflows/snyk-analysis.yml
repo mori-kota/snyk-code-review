@@ -23,13 +23,19 @@ jobs:
         CODE_CONTENT=$(cat src/index.js | jq -Rs .)
         echo "::set-output name=code::$CODE_CONTENT"
 
+    - name: Log the escaped code
+      run: |
+        echo "Escaped code content: ${{ steps.read_code.outputs.code }}"
+
     - name: AI-driven Idempotency Check
       run: |
-        curl -X POST https://api.openai.com/v1/completions \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-        -d '{
+        JSON_PAYLOAD='{
           "model": "gpt-3.5-turbo",
           "prompt": "Please check the following code for idempotency issues: ${{ steps.read_code.outputs.code }}",
           "max_tokens": 1000
         }'
+        echo "Sending JSON Payload: $JSON_PAYLOAD"
+        curl -X POST https://api.openai.com/v1/completions \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+        -d "$JSON_PAYLOAD"
