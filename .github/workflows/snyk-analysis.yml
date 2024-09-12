@@ -25,16 +25,18 @@ jobs:
 
     - name: Log the escaped code
       run: |
-        echo "Escaped code content: \"${{ steps.read_code.outputs.code }}\""
+        ESCAPED_CODE="${{ steps.read_code.outputs.code }}"
+        echo "Escaped code content: ${ESCAPED_CODE}"
 
     - name: AI-driven Idempotency Check
       run: |
-        JSON_PAYLOAD=$(echo '{
+        JSON_PAYLOAD=$(jq -n --arg code "$ESCAPED_CODE" '{
           "model": "gpt-3.5-turbo",
-          "prompt": "Please check the following code for idempotency issues: '"${{ steps.read_code.outputs.code }}"'",
+          "prompt": "Please check the following code for idempotency issues: \($code)",
           "max_tokens": 1000
-        }' | jq -c .)
+        }')
         echo "Sending JSON Payload: $JSON_PAYLOAD"
         curl -X POST https://api.openai.com/v1/completions \
         -H "Content-Type: application/json" \
-        -H "Authorization: Bear
+        -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+        -d "$JSON_PAYLOAD"
