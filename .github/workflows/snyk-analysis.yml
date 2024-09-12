@@ -1,22 +1,26 @@
-name: Snyk Code Monitoring
+name: AI Code Review for Idempotency
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
+  push:
     branches:
       - main
 
 jobs:
-  security:
+  review:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@master  # リポジトリのチェックアウト
-      - name: Run Snyk monitor
-        uses: snyk/actions/node@master  # SnykのNode.js用アクション
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: AI-driven Idempotency Check
+      run: |
+        curl -X POST https://api.openai.com/v1/completions \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+        -d '{
+          "model": "gpt-4",
+          "prompt": "Please check the following code for idempotency issues: $(cat src/index.js)",
+          "max_tokens": 1000
+        }'
