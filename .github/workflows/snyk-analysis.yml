@@ -1,0 +1,31 @@
+name: Snyk Code Analysis
+
+on:
+  pull_request:
+    branches:
+      - main  # PRが作成されたときに実行
+  push:
+    branches:
+      - main  # mainブランチへのプッシュ時にも実行
+
+jobs:
+  snyk:
+    runs-on: ubuntu-latest  # Snykによる解析をUbuntu環境で実行
+
+    steps:
+    - uses: actions/checkout@v2  # リポジトリをチェックアウト
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  # Node.jsのバージョンを指定
+
+    - name: Install dependencies
+      run: npm install  # プロジェクトの依存関係をインストール
+
+    - name: Run Snyk Code Test
+      uses: snyk/actions/setup@v2  # Snykの公式アクションを利用
+      with:
+        args: snyk code test  # Snykでコード解析を実行
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}  # GitHub SecretsにSnyk APIトークンを設定
