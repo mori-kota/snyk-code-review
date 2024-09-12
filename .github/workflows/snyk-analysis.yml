@@ -23,9 +23,9 @@ jobs:
     - name: Install dependencies
       run: npm install  # プロジェクトの依存関係をインストール
 
-    - name: Run Snyk Code Test
-      uses: snyk/actions/setup@v1  # 正しいバージョンは `v1`
+    - name: Set up Snyk
+      uses: snyk/snyk@master  # 最新のSnyk GitHub Action
       with:
-        args: snyk code test  # Snykでコード解析を実行
+        args: monitor  # コード解析を行う（snyk monitorまたはsnyk test）
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}  # GitHub Secretsに追加されたSnyk APIトークンを使用
