@@ -1,0 +1,12 @@
+# Node.js関連
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Firebase Admin SDK関連のキーや環境変数（もし存在する場合）
+.env
+firebase-adminsdk-*.json
+
+# その他のOS関連の不要ファイル
+.DS_Store
+Thumbs.db
