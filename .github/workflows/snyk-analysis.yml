@@ -12,7 +12,10 @@ jobs:
   code_review:
     runs-on: ubuntu-latest
     steps:
+      # リポジトリのすべての履歴を取得するためにfetch-depth: 0を指定
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # すべての履歴を取得
 
       - name: Get PR diff
         run: git diff origin/main...HEAD > pr_diff.patch  # 差分を取得してファイルに保存
