@@ -1,32 +1,35 @@
-name: Hugging Face Code Review
+name: ChatGPT Code Review
+
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
+    types: [opened, reopened, synchronize]
 
 jobs:
-  review:
+  code_review:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Install dependencies
-      run: sudo apt-get install -y jq
-
-    - name: Send code to Hugging Face API for analysis
-      run: |
-        # Read the code content from the file
-        CODE_CONTENT=$(cat src/index.js | jq -Rs .)
-        
-        # Use Fine-grained API token with Read-only access
-        curl -X POST https://api-inference.huggingface.co/models/deepcode-sever \
-                -H "Authorization: Bearer ${{ secrets.HF_API_KEY }}" \
-                -H "Content-Type: application/json" \
-                -d "{\"inputs\": $CODE_CONTENT}" \
-                -o result.json
-        
-    - name: Output the analysis results
-      run: cat result.json
+      - uses: actions/checkout@v2
+      
+      - name: Run ChatGPT Code Review
+        uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Japanese  # ChatGPTのレビュー結果を日本語で表示
+          OPENAI_API_ENDPOINT: https://api.openai.com/v1
+          MODEL: gpt-3.5-turbo
+          PROMPT: |
+            以下のコードに対して、次の点を確認してください:
+            1. Firestoreの冪等性が正しく実装されているか
+            2. トランザクション処理に問題がないか
+            3. セキュリティ上の問題がないか
+            4. コーディングスタイルや規約違反がないか
+            問題点がある場合、具体的に指摘し、日本語で説明してください。
+          top_p: 1
+          temperature: 0.7
+          max_tokens: 10000
+          MAX_PATCH_LENGTH: 5000
