@@ -1,32 +1,48 @@
-name: Hugging Face Code Review
+name: ChatGPT Code Review
+
+permissions:
+  contents: read
+  pull-requests: write
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
+    types: [opened, reopened, synchronize]
 
 jobs:
-  review:
+  code_review:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Install dependencies
-      run: sudo apt-get install -y jq
+      # リポジトリのすべての履歴を取得するためにfetch-depth: 0を指定
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # すべての履歴を取得
 
-    - name: Send code to Hugging Face API for analysis
-      run: |
-        # Read the code content from the file
-        CODE_CONTENT=$(cat src/index.js | jq -Rs .)
-        
-        # Use Fine-grained API token with Read-only access
-        curl -X POST https://api-inference.huggingface.co/models/deepcode-sever \
-                -H "Authorization: Bearer ${{ secrets.HF_API_KEY }}" \
-                -H "Content-Type: application/json" \
-                -d "{\"inputs\": $CODE_CONTENT}" \
-                -o result.json
-        
-    - name: Output the analysis results
-      run: cat result.json
+      # PR全体の差分を取得
+      - name: Get PR diff
+        run: git diff origin/main...HEAD > pr_diff.patch  # 差分を取得してファイルに保存
+
+      # 差分ファイルを表示（デバッグ用）
+      - name: Show PR diff
+        run: cat pr_diff.patch  # 差分を出力して確認
+
+      # ChatGPTに差分を渡してレビュー実行
+      - name: Run ChatGPT Code Review
+        uses: anc95/ChatGPT-CodeReview@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGUAGE: Japanese
+          OPENAI_API_ENDPOINT: https://api.openai.com/v1
+          MODEL: gpt-3.5-turbo
+          PROMPT: |
+            以下のコードに対して、次の点を確認してください:
+            1. Firestoreの冪等性が正しく実装されているか
+            2. トランザクション処理が適切に行われているか
+            3. Firestoreクエリやデータ書き込みに関するセキュリティ問題がないか
+            4. その他のコーディングスタイルや規約違反がないか
+            問題点がある場合、具体的に指摘し、日本語で説明してください。
+          top_p: 1
+          temperature: 0.7
+          max_tokens: 2048
+        with:
+          patch_file: pr_diff.patch  # 取得した差分をChatGPTに渡す
