@@ -13,13 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
+
+      - name: Get PR diff
+        run: git diff origin/main...HEAD > pr_diff.patch  # 差分を取得してファイルに保存
+
       - name: Run ChatGPT Code Review
         uses: anc95/ChatGPT-CodeReview@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LANGUAGE: Japanese  # ChatGPTのレビュー結果を日本語で表示
+          LANGUAGE: Japanese
           OPENAI_API_ENDPOINT: https://api.openai.com/v1
           MODEL: gpt-3.5-turbo
           PROMPT: |
@@ -31,5 +34,6 @@ jobs:
             問題点がある場合、具体的に指摘し、日本語で説明してください。
           top_p: 1
           temperature: 0.7
-          max_tokens: 2048  # 修正ポイント: 4096以下に設定
-          MAX_PATCH_LENGTH: 5000
+          max_tokens: 2048
+        with:
+          patch_file: pr_diff.patch  # 取得した差分をChatGPTに渡す
