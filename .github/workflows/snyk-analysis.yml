@@ -17,9 +17,15 @@ jobs:
         with:
           fetch-depth: 0  # すべての履歴を取得
 
+      # PR全体の差分を取得
       - name: Get PR diff
         run: git diff origin/main...HEAD > pr_diff.patch  # 差分を取得してファイルに保存
 
+      # 差分ファイルを表示（デバッグ用）
+      - name: Show PR diff
+        run: cat pr_diff.patch  # 差分を出力して確認
+
+      # ChatGPTに差分を渡してレビュー実行
       - name: Run ChatGPT Code Review
         uses: anc95/ChatGPT-CodeReview@main
         env:
@@ -31,9 +37,9 @@ jobs:
           PROMPT: |
             以下のコードに対して、次の点を確認してください:
             1. Firestoreの冪等性が正しく実装されているか
-            2. トランザクション処理に問題がないか
-            3. セキュリティ上の問題がないか
-            4. コーディングスタイルや規約違反がないか
+            2. トランザクション処理が適切に行われているか
+            3. Firestoreクエリやデータ書き込みに関するセキュリティ問題がないか
+            4. その他のコーディングスタイルや規約違反がないか
             問題点がある場合、具体的に指摘し、日本語で説明してください。
           top_p: 1
           temperature: 0.7
